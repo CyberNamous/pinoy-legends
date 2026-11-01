@@ -1,7 +1,7 @@
 // Configuration reference only. Configure bindings and secrets through the Cloudflare Dashboard.
 // Site files are served from the private R2 site/ prefix; no static-asset binding or build step.
 {
-  "name": "pinoy-legends",
+  "name": "pinoylegends",
   "main": "worker/index.js",
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
