@@ -1,0 +1,21 @@
+// Configuration reference only. Configure bindings and secrets through the Cloudflare Dashboard.
+// Site files are served from the private R2 site/ prefix; no static-asset binding or build step.
+{
+  "name": "pinoy-legends",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pinoy-legends-db",
+      "database_id": "REPLACE_WITH_DASHBOARD_DATABASE_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "pinoy-legends-assets"
+    }
+  ]
+}
