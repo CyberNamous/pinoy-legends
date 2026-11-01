@@ -9,7 +9,7 @@
     {
       "binding": "DB",
       "database_name": "pinoy-legends-db",
-      "database_id": "REPLACE_WITH_DASHBOARD_DATABASE_ID"
+      "database_id": "344fae79-3f25-46cd-ab2a-73458338e67f"
     }
   ],
   "r2_buckets": [
