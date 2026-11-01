@@ -10,6 +10,11 @@
     "run_worker_first": true,
     "html_handling": "none"
   },
+  "vars": {
+    "DISCORD_CLIENT_ID": "1560692101925310524",
+    "DISCORD_REDIRECT_URI": "https://pinoylegends.cybernamous.workers.dev/auth/callback",
+    "OWNER_DISCORD_ID": "525629510293389323"
+  },
   "d1_databases": [
     {
       "binding": "DB",
