@@ -1,4 +1,5 @@
 import {AREAS,body,checkOrigin,fail,identity,json,publicUser,rate,requireArea,requireOwner} from './auth.js';
+import {loadMaintenance,publicState,maintenanceAdmin} from './maintenance.js';
 export const SETTING_KEYS=['discord_url','official_email','appeals_contact','youtube_url','facebook_url','tiktok_url','x_url','creator_url','creator_title','creator_body','download_mode','download_url','site_title','tagline','testing_status','logo_key','banner_key'];
 const ROLES=['Tank','Fighter','Assassin','Mage','Marksman','Support'];
 const SECTIONS=['hero','announcement_bar','pinned','feed','about','featured','development','updates','community'];
@@ -18,10 +19,12 @@ export async function api(request,env,path,ctx) {
  if(path==='/api/me'&&method==='GET')return json({user:publicUser(await identity(request,env))});
  if(path==='/api/public'&&method==='GET') {const row=await env.DB.prepare('SELECT value FROM settings WHERE key=\'content_version\'').first();const version=row?.value||'initial';if(url.searchParams.get('version')===version)return json({version,unchanged:true});const cacheKey=new Request(url.origin+'/__content-cache/'+encodeURIComponent(version));let cached=await caches.default.match(cacheKey);if(!cached){cached=new Response(JSON.stringify({version,...await publicData(env)}),{headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'public, max-age=20'}});ctx.waitUntil(caches.default.put(cacheKey,cached.clone()));}const response=new Response(cached.body,cached);response.headers.set('Cache-Control','no-store');return response;}
  if(path==='/api/feedback'&&method==='POST') {const b=await body(request);if(text(b.website,200))return json({ok:true});await rate(request,env,'feedback',5,600);if(!['Suggestion','Feedback','Bug'].includes(b.type))fail(400,'Choose Suggestion, Feedback or Bug.');const message=text(b.message,5000,true),name=text(b.discord_name,100);if(env.TURNSTILE_SECRET){const token=text(b.turnstile_token,2048,true);const form=new FormData();form.set('secret',env.TURNSTILE_SECRET);form.set('response',token);const response=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body:form});const result=await response.json();if(!result.success||result.hostname!==url.hostname||result.action!=='feedback')fail(400,'Spam verification failed. Please try again.');}await env.DB.prepare('INSERT INTO feedback(type,message,discord_name) VALUES(?,?,?)').bind(b.type,message,name).run();return json({ok:true},201);}
+ if(path==='/api/maintenance'&&method==='GET')return json(publicState(await loadMaintenance(env)));
  if(path==='/api/turnstile'&&method==='GET')return json({sitekey:env.TURNSTILE_SECRET?env.TURNSTILE_SITE_KEY||null:null});
  if(!path.startsWith('/api/admin/'))fail(404,'This API route does not exist.');
  const user=await identity(request,env),parts=path.slice('/api/admin/'.length).split('/'),area=parts[0],id=parts[1];
- if(area==='access'||area==='audit')requireOwner(user);else requireArea(user,area);
+ if(area==='access'||area==='audit')requireOwner(user);else requireArea(user,area==='maintenance'?'settings':area);
+ if(area==='maintenance')return maintenanceAdmin(request,env,user,method,{body,text,commit,fail,json});
  if(method==='GET') {
  if(area==='homepage') {const r=await env.DB.batch([env.DB.prepare('SELECT * FROM sections ORDER BY sort_order,key'),env.DB.prepare('SELECT * FROM nav_items ORDER BY sort_order,key')]);return json({sections:r[0].results.map(x=>({...x,content:JSON.parse(x.content)})),nav:r[1].results,settings:{testing_status:(await settings(env)).testing_status}});}
  if(area==='settings'||area==='creators') {const s=await settings(env);return json({settings:area==='creators'?Object.fromEntries(Object.entries(s).filter(([k])=>k.startsWith('creator_'))):s});}
