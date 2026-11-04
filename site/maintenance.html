@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/webp" href="/assets/logo/logo.webp">
+<link rel="stylesheet" href="/css/style.css">
+<title>Pinoy Legends — Down for maintenance</title>
+</head>
+<body class="maint-body">
+<main class="maint-wrap" data-end="{{END}}" data-start="{{START}}">
+<section class="card maint-card">
+<img class="maint-logo" src="/assets/logo/logo.webp" alt="Pinoy Legends logo" width="72" height="72">
+<h1>Pinoy Legends is down for maintenance</h1>
+<p id="maint-message">{{MESSAGE}}</p>
+<div id="maint-timer" hidden>
+<p class="maint-label">BACK IN</p>
+<p id="maint-countdown" class="maint-time" aria-live="off">--:--:--</p>
+<div class="maint-bar" aria-hidden="true"><div id="maint-fill" class="maint-fill"></div></div>
+<p id="maint-until" class="maint-until"></p>
+</div>
+<p id="maint-open" class="maint-time maint-soon" hidden>We’ll be back soon</p>
+<ul class="maint-list">
+<li><span class="maint-name"><i class="maint-dot down"></i>Website</span><span class="maint-pill down">Down</span></li>
+<li><span class="maint-name"><i class="maint-dot down"></i>News and heroes</span><span class="maint-pill down">Down</span></li>
+<li><span class="maint-name"><i class="maint-dot down"></i>Contact form</span><span class="maint-pill down">Down</span></li>
+<li><span class="maint-name"><i class="maint-dot down"></i>Accounts and login</span><span class="maint-pill down">Down</span></li>
+<li><span class="maint-name"><i class="maint-dot ok"></i><a href="/legal/terms">Terms and Privacy</a></span><span class="maint-pill ok">Available</span></li>
+</ul>
+<p class="maint-auto"><i class="maint-dot live"></i>We check again automatically.</p>
+<button type="button" id="maint-check" class="button">Check again</button>
+<p id="maint-status" class="help" role="status"></p>
+<div class="maint-actions">{{DISCORD_LINK}}</div>
+<p class="maint-contact">{{CONTACT}}</p>
+</section>
+</main>
+<script src="/js/maintenance.js" defer></script>
+</body>
+</html>
