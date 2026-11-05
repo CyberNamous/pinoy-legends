@@ -14,6 +14,7 @@
     "DISCORD_CLIENT_ID": "1560692101925310524",
     "DISCORD_REDIRECT_URI": "https://pinoylegends.cybernamous.workers.dev/auth/callback",
     "OWNER_DISCORD_ID": "525629510293389323"
+    "TURNSTILE_SITE_KEY" : "0x4AAAAAAF0RV4sMI0Ea74ys"
   },
   "d1_databases": [
     {
