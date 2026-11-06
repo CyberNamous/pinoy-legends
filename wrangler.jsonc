@@ -1,7 +1,7 @@
 {
   "name": "pinoylegends",
   "main": "worker/index.js",
-  "compatibility_date": "2026-11-06",
+  "compatibility_date": "2026-11-05",
   "workers_dev": true,
   "keep_vars": true,
   "assets": {
