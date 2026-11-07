@@ -1,7 +1,7 @@
 {
   "name": "pinoylegends",
   "main": "worker/index.js",
-  "compatibility_date": "2026-11-05",
+  "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "keep_vars": true,
   "assets": {
@@ -15,8 +15,6 @@
     "DISCORD_REDIRECT_URI": "https://pinoylegends.cybernamous.workers.dev/auth/callback",
     "OWNER_DISCORD_ID": "525629510293389323" ,
     "TURNSTILE_SITE_KEY": "0x4AAAAAAF0RV4sMI0Ea74ys" ,
-    "GOOGLE_CLIENT_ID": "90904186182-hhe2r8umb11c8d1tf9nnb9ipbddf5nb2.apps.googleusercontent.com" ,
-    "GOOGLE_REDIRECT_URL": "https://pinoylegends.cybernamous.workers.dev/auth/google/callbackX" ,
   },
   "d1_databases": [
     {
