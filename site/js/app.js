@@ -48,3 +48,27 @@ if(page!=='admin'){
  async function refresh(initial=false){if(polling||document.hidden)return;polling=true;try{const [data,me]=await Promise.all([request('/api/public'+(state?'?version='+encodeURIComponent(state.version):'')),request('/api/me')]);const previousUser=JSON.stringify(user);user=me.user;if(!data.unchanged){state=data;if(initial||!document.activeElement?.matches('input,textarea,select')){render();deferredRender=false;}else{header();footer();deferredRender=true;}}else if(previousUser!==JSON.stringify(user)||(deferredRender&&!document.activeElement?.matches('input,textarea,select'))){render();deferredRender=false;}if(initial&&page==='news'){const post=new URL(location.href).searchParams.get('post');if(post)showPost(post);}}catch(err){if(initial)$('#main').innerHTML=`<section class="card"><h1>The website is not ready yet</h1><p>${esc(err.message)}</p><button type="button" class="secondary" id="retry-load">Try again</button></section>`;}finally{polling=false;}}
  document.addEventListener('click',e=>{if(e.target.closest('#retry-load'))refresh(true);});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});if('BroadcastChannel'in window){const channel=new BroadcastChannel('pinoy-content');channel.onmessage=()=>refresh();}refresh(true);setInterval(()=>refresh(),4000);
 }
+
+/* sticky header: shadow once scrolled; on phones it hides when scrolling down and returns when scrolling up */
+(() => {
+  const header = document.getElementById('site-header');
+  if (!header) return; // admin panel and other pages without this header
+  const phone = window.matchMedia('(max-width:700px)');
+  const HIDE_AFTER = 80, DELTA = 8;
+  let last = Math.max(0, window.scrollY), ticking = false;
+  function update() {
+    ticking = false;
+    const y = Math.max(0, window.scrollY);
+    header.classList.toggle('is-scrolled', y > 4);
+    if (!phone.matches || header.contains(document.activeElement) || y <= HIDE_AFTER) {
+      header.classList.remove('is-hidden'); last = y; return;
+    }
+    const d = y - last;
+    if (d > DELTA) { header.classList.add('is-hidden'); last = y; }
+    else if (d < -DELTA) { header.classList.remove('is-hidden'); last = y; }
+  }
+  window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  header.addEventListener('focusin', () => header.classList.remove('is-hidden'));
+  if (phone.addEventListener) phone.addEventListener('change', update);
+  update();
+})();
