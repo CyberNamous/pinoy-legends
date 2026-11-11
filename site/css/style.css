@@ -43,3 +43,13 @@ body:not([data-page=admin])>.site-footer{margin-top:auto;flex-shrink:0}
 .maint-actions{margin-top:12px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .maint-contact{color:var(--muted);font-size:13px;margin:14px 0 0}
 .maint-contact a{color:var(--sky)}
+
+/* sticky header: always stuck on desktop, smart hide/show on phones */
+html{scroll-padding-top:96px}
+.site-header{position:sticky;top:0;z-index:50;transition:transform .25s ease,box-shadow .2s ease}
+.site-header.is-scrolled{box-shadow:0 4px 16px rgba(0,0,0,.35)}
+@media(max-width:700px){
+  html{scroll-padding-top:0}
+  .site-header.is-hidden{transform:translateY(-100%);box-shadow:none}
+}
+@media(prefers-reduced-motion:reduce){.site-header{transition:none}}
