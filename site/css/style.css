@@ -53,3 +53,43 @@ html{scroll-padding-top:96px}
   .site-header.is-hidden{transform:translateY(-100%);box-shadow:none}
 }
 @media(prefers-reduced-motion:reduce){.site-header{transition:none}}
+
+/* verified team badge, poster chip, team and member profiles */
+.pl-av{position:relative;display:inline-flex;width:44px;height:44px;flex:none;--ring:var(--yellow)}
+.pl-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:var(--alt);box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--ring)}
+.pl-av.dev{--ring:var(--sky)}.pl-av.mod{--ring:#86efac}.pl-av.own{--ring:#fcd34d}.pl-av.former,.pl-av.member{--ring:rgba(255,255,255,.28)}
+.pl-tick{position:absolute;right:-4px;bottom:-4px;width:19px;height:19px}
+.pl-role{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(245,184,46,.16);color:var(--yellow);white-space:nowrap}
+.pl-role.dev{background:rgba(125,211,252,.16);color:var(--sky)}
+.pl-role.mod{background:rgba(134,239,172,.16);color:#86efac}
+.pl-role.own{background:linear-gradient(135deg,rgba(245,184,46,.32),rgba(245,158,11,.16));color:#fcd34d}
+.pl-role.former{background:rgba(255,255,255,.1);color:var(--soft)}
+.post-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.post-head .meta{margin:0}
+.post-head>.meta:only-child{flex:1 1 100%}
+.poster{display:flex;align-items:center;gap:14px;background:none;border:0;padding:4px;margin:-4px;color:inherit;font:inherit;text-align:left;cursor:pointer;min-width:0;max-width:100%;border-radius:12px}
+.poster:hover .poster-name{text-decoration:underline}
+.poster:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.poster-text{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
+.poster-name{font-weight:700;font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team-card{padding:0;overflow:hidden}
+.team-banner{height:120px;background:linear-gradient(120deg,#1b2547,#6b4e12 60%,#f5b82e)}
+.team-banner.dev{background:linear-gradient(120deg,#1b2547,#1e4a63 60%,#7dd3fc)}
+.team-banner.mod{background:linear-gradient(120deg,#1b2547,#1f5a3a 60%,#86efac)}
+.team-banner.former,.team-banner.member{background:linear-gradient(120deg,#1b2547,#2a3560 55%,#4357a0)}
+.team-body{padding:0 28px 28px}
+.team-avatar{width:104px;height:104px;margin-top:-52px}
+.team-avatar img{box-shadow:0 0 0 5px var(--card),0 0 0 8px var(--ring)}
+.team-avatar .pl-tick{width:30px;height:30px;right:0;bottom:0}
+.team-name{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+.team-name h1,.team-name h2{margin:0;font-size:28px;overflow-wrap:anywhere}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
+.tile{border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.tile small{display:block;color:var(--muted)}.tile strong{display:block;font-size:22px;margin-top:4px;overflow-wrap:anywhere}
+.uid-row{margin:16px 0 0}
+.uid-chip{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:6px 6px 6px 12px}
+.chip-copy{font:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink);background:var(--yellow);border:0;border-radius:7px;padding:5px 10px}
+.post-list a{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-top:1px solid var(--border);color:inherit;text-decoration:none}
+.post-list a:first-child{border-top:0}.post-list .kind-label{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:12px}
+dialog .team-banner{height:72px}dialog .team-avatar{width:76px;height:76px;margin-top:-38px}dialog .team-body{padding:0 20px 22px}dialog .team-name h2{font-size:22px}dialog .team-card .button{margin-top:14px}
+@media(max-width:700px){.team-body{padding:0 18px 22px}.team-banner{height:96px}.team-avatar{width:88px;height:88px;margin-top:-44px}.tiles{grid-template-columns:1fr}.team-name h1{font-size:24px}}
