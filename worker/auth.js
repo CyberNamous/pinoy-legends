@@ -1,5 +1,5 @@
 import {assignUid} from './members.js';
-export const AREAS = ['homepage','announcements','news','heroes','creators','staff','inbox','uploads','settings','legal'];
+export const AREAS = ['homepage','announcements','news','heroes','creators','staff','inbox','uploads','settings','legal','members'];
 const enc = new TextEncoder();
 export function fail(status,message) { throw Object.assign(new Error(message),{status}); }
 export function json(data,status=200) { return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}}); }

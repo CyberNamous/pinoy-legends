@@ -51,3 +51,19 @@ export async function assignUid(env, discordId) {
   }
   throw Object.assign(new Error('Could not create your member ID. Please try again.'), { status: 500 });
 }
+
+// Gives every member who still has no UID one, in batches. Runs at most once a minute per isolate.
+let lastBackfill = 0;
+export async function backfillUids(env) {
+  if (Date.now() - lastBackfill < 60000) return;
+  lastBackfill = Date.now();
+  for (let round = 0; round < 15; round++) {
+    const rows = await env.DB.prepare('SELECT discord_id FROM users WHERE uid IS NULL LIMIT 100').all();
+    if (!rows.results.length) return;
+    try {
+      await env.DB.batch(rows.results.map(r => env.DB.prepare('UPDATE users SET uid=? WHERE discord_id=? AND uid IS NULL').bind(makeUid(), r.discord_id)));
+    } catch (e) {
+      if (!/UNIQUE|constraint/i.test(String(e.message))) throw e; // a rare collision: the next round uses new numbers
+    }
+  }
+}

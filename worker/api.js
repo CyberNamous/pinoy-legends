@@ -1,6 +1,6 @@
 import {AREAS,avatar,body,checkOrigin,fail,identity,json,publicUser,rate,requireArea,requireOwner} from './auth.js';
 import {loadMaintenance,publicState,maintenanceAdmin} from './maintenance.js';
-import {TEAM_LABELS,SENDER_LINK_DAYS,makeRef,validUid} from './members.js';
+import {TEAM_LABELS,SENDER_LINK_DAYS,makeRef,validUid,backfillUids} from './members.js';
 export const SETTING_KEYS=['discord_url','official_email','appeals_contact','youtube_url','facebook_url','tiktok_url','x_url','creator_url','creator_title','creator_body','download_mode','download_url','site_title','tagline','testing_status','logo_key','banner_key'];
 const ROLES=['Tank','Fighter','Assassin','Mage','Marksman','Support'];
 const SECTIONS=['hero','announcement_bar','pinned','feed','about','featured','development','updates','community'];
@@ -27,6 +27,20 @@ async function teamProfile(env,uid){
  const latest=await env.DB.prepare('SELECT id,kind,title,created_at FROM posts WHERE visible=1 AND author_uid=? ORDER BY created_at DESC,id DESC LIMIT 10').bind(uid).all();
  return {uid,name,label,verified:current,since,posts:count.n,latest:latest.results,avatar:'/team-avatar/'+uid};
 }
+async function memberSearch(env,user,url){
+ const raw=(url.searchParams.get('q')||'').trim().slice(0,60),offset=Math.max(0,Math.min(100000,parseInt(url.searchParams.get('offset')||'0',10)||0)),LIMIT=20,conds=[],args=[];let hint='';
+ if(raw){
+  const compact=raw.replace(/[\s-]/g,''),like='%'+raw.replace(/[\\%_]/g,'\\$&')+'%';
+  conds.push("u.username LIKE ? ESCAPE '\\'","a.display_name LIKE ? ESCAPE '\\'");args.push(like,like);
+  if(/^(PL)?\d{3,12}$/i.test(compact)){const digits=compact.replace(/^PL/i,'');if(digits.length===12){conds.push('u.uid=?');args.push('PL'+digits);if(!validUid('PL'+digits))hint='mistyped';}else{conds.push('u.uid LIKE ?');args.push('PL%'+digits+'%');}}
+ }
+ const from='FROM users u LEFT JOIN admins a ON a.discord_id=u.discord_id '+(conds.length?'WHERE '+conds.join(' OR '):'');
+ const total=(await env.DB.prepare('SELECT count(*) n '+from).bind(...args).first()).n;
+ const rows=await env.DB.prepare('SELECT u.discord_id,u.uid,u.username,u.created_at,u.last_login,u.testing_status,a.display_name,a.role_label,a.suspended '+from+' ORDER BY '+(raw?'u.username COLLATE NOCASE':'u.created_at DESC, u.discord_id')+' LIMIT ? OFFSET ?').bind(...args,LIMIT+1,offset).all();
+ const owner=await ownerProfile(env);
+ const items=rows.results.slice(0,LIMIT).map(r=>{let team=null;if(r.discord_id===env.OWNER_DISCORD_ID)team={name:owner.display_name||r.username,label:owner.role_label};else if(r.role_label!=null&&!r.suspended)team={name:r.display_name||r.username,label:TEAM_LABELS.includes(r.role_label)?r.role_label:'Staff'};const o={uid:r.uid||null,username:r.username,member_since:r.created_at,last_seen:r.last_login,testing_status:r.testing_status,team};if(user.owner)o.discord_id=r.discord_id;return o;});
+ return {items,total,more:rows.results.length>LIMIT,offset,hint,query:raw};
+}
 export async function teamAvatar(env,uid){
  const fallback=()=>new Response(STAR_SVG,{headers:{'Content-Type':'image/svg+xml','Cache-Control':'public, max-age=300'}});
  if(!validUid(uid))return fallback();
@@ -37,7 +51,7 @@ export async function teamAvatar(env,uid){
 export async function api(request,env,path,ctx) {
  const method=request.method,url=new URL(request.url);
  if(method!=='GET'&&method!=='HEAD')checkOrigin(request);
- if(path==='/api/me'&&method==='GET')return json({user:publicUser(await identity(request,env))});
+ if(path==='/api/me'&&method==='GET'){const me=await identity(request,env),pu=publicUser(me);if(pu&&me.admin){const au=await authorOf(env,me);pu.team={name:au.name,label:au.label};}return json({user:pu});}
  if(path==='/api/public'&&method==='GET') {const row=await env.DB.prepare('SELECT value FROM settings WHERE key=\'content_version\'').first();const version=row?.value||'initial';if(url.searchParams.get('version')===version)return json({version,unchanged:true});const cacheKey=new Request(url.origin+'/__content-cache/'+encodeURIComponent(version));let cached=await caches.default.match(cacheKey);if(!cached){cached=new Response(JSON.stringify({version,...await publicData(env)}),{headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'public, max-age=20'}});ctx.waitUntil(caches.default.put(cacheKey,cached.clone()));}const response=new Response(cached.body,cached);response.headers.set('Cache-Control','no-store');return response;}
  if(path==='/api/feedback'&&method==='POST') {const sender=await identity(request,env);if(!sender)fail(401,'Log in with Discord to send feedback.');const b=await body(request);if(text(b.website,200))return json({ok:true});await rate(request,env,'feedback',5,600);if(!['Suggestion','Feedback','Bug'].includes(b.type))fail(400,'Choose Suggestion, Feedback or Bug.');const message=text(b.message,5000,true),name=text(b.discord_name,100);if(env.TURNSTILE_SECRET){const token=text(b.turnstile_token,2048,true);const form=new FormData();form.set('secret',env.TURNSTILE_SECRET);form.set('response',token);const response=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body:form});const result=await response.json();if(!result.success||result.hostname!==url.hostname||result.action!=='feedback')fail(400,'Spam verification failed. Please try again.');}if(!sender.uid)fail(500,'Your member ID is not ready yet. Please reload the page and try again.');const nowSec=Math.floor(Date.now()/1000);let ref='';for(let i=0;i<6;i++){ref=makeRef();try{await env.DB.batch([env.DB.prepare('INSERT INTO feedback(type,message,discord_name,ref) VALUES(?,?,?,?)').bind(b.type,message,name,ref),env.DB.prepare('INSERT INTO feedback_senders(ref,uid,created_at) VALUES(?,?,?)').bind(ref,sender.uid,nowSec),env.DB.prepare('DELETE FROM feedback_senders WHERE created_at<?').bind(nowSec-SENDER_LINK_DAYS*86400)]);break;}catch(e){if(i===5||!/UNIQUE|constraint/i.test(String(e.message)))throw e;}}return json({ok:true,ref},201);}
  if(path==='/api/maintenance'&&method==='GET')return json(publicState(await loadMaintenance(env)));
@@ -48,6 +62,7 @@ export async function api(request,env,path,ctx) {
  const user=await identity(request,env),parts=path.slice('/api/admin/'.length).split('/'),area=parts[0],id=parts[1];
  if(area==='access'||area==='audit'||area==='owner-profile')requireOwner(user);else requireArea(user,area==='maintenance'?'settings':area);
  if(area==='maintenance')return maintenanceAdmin(request,env,user,method,{body,text,commit,fail,json});
+ if(area==='members'){if(method!=='GET')fail(405,'This method is not supported.');await backfillUids(env);return json(await memberSearch(env,user,url));}
  if(area==='owner-profile'){
   if(method==='GET')return json({...await ownerProfile(env),default_name:user.username,labels:TEAM_LABELS});
   if(method!=='PUT')fail(405,'This method is not supported.');
