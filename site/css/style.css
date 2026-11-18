@@ -93,3 +93,10 @@ html{scroll-padding-top:96px}
 .post-list a:first-child{border-top:0}.post-list .kind-label{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:12px}
 dialog .team-banner{height:72px}dialog .team-avatar{width:76px;height:76px;margin-top:-38px}dialog .team-body{padding:0 20px 22px}dialog .team-name h2{font-size:22px}dialog .team-card .button{margin-top:14px}
 @media(max-width:700px){.team-body{padding:0 18px 22px}.team-banner{height:96px}.team-avatar{width:88px;height:88px;margin-top:-44px}.tiles{grid-template-columns:1fr}.team-name h1{font-size:24px}}
+
+/* admin: Members search, inline verified tick */
+.member-search input{width:100%}
+.member-item{margin-top:12px}
+.member-name{font-size:17px}
+.member-line{margin:10px 0}
+.pl-tick-inline{width:16px;height:16px;vertical-align:-3px;margin-left:6px}
